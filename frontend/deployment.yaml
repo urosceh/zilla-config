@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zilla-frontned
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zilla
+      tier: frontend
+  template:
+    metadata:
+      labels:
+        app: zilla
+        tier: frontend
+    spec:
+      containers:
+      - name: zilla-frontend
+        image: hatch33/zilla-frontend:v0.1.3
+        ports:
+        - containerPort: 8080
+        env:
+          - name: PORT
+            value: "8080"
+          - name: REACT_APP_API_PROTOCOL
+            value: "http"
+          - name: REACT_APP_API_HOST
+            value: "34.162.210.252"
+          - name: REACT_APP_API_PORT
+            value: "80"
+        command: ["npm", "run", "start"]

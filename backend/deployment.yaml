@@ -1,0 +1,99 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zilla-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zilla
+      tier: backend
+  template:
+    metadata:
+      labels:
+        app: zilla
+        tier: backend
+    spec:
+      # serviceAccountName: zilla-service-account
+      # Init containers are executed before the main container starts
+      initContainers:
+      - name: zilla-migrations
+        image: hatch33/zilla-migrations:latest
+        imagePullPolicy: Always
+        env:
+          - name: LIQUIBASE_COMMAND_CHANGELOG_FILE
+            value: changelog/dbchangelog.xml
+          - name: LIQUIBASE_COMMAND_UPDATE_URL
+            value: jdbc:postgresql://10.3.0.3:5432/postgres
+          - name: LIQUIBASE_COMMAND_UPDATE_USERNAME
+            value: postgres
+          - name: LIQUIBASE_COMMAND_UPDATE_PASSWORD
+            value: pass
+          - name: LOG_LEVEL
+            value: info
+        # resources:
+        #   requests:
+        #     cpu: 50m
+        #     memory: 128Mi
+        #   limits:
+        #     cpu: 50m
+        #     memory: 256Mi
+        args: [
+          '--changeLogFile=dbchangelog.xml',
+          '--classpath=/liquibase/changelog',
+          '--url=${LIQUIBASE_COMMAND_UPDATE_URL}',
+          '--username=${LIQUIBASE_COMMAND_UPDATE_USERNAME}',
+          '--password=${LIQUIBASE_COMMAND_UPDATE_PASSWORD}',
+          '--logLevel=info',
+          'update'
+        ]
+      # Main containers are the containers that will run the application
+      containers:
+      - name: zilla-backend
+        image: hatch33/zilla-backend:v0.1.2
+        imagePullPolicy: Always
+        env:
+          - name: REDIS_HOST
+            value: "redis"
+          - name: REDIS_PORT
+            value: "6379"
+          - name: DB_HOST
+            value: "10.3.0.3"
+          - name: DB_NAME
+            value: "postgres"
+          - name: DB_PORT
+            value: "5432"
+          - name: DB_USERNAME
+            value: "postgres"
+          - name: DB_PASSWORD
+            value: "pass"
+          # - name: SMTH_SECRET_2
+          #   valueFrom:
+          #     secretKeyRef:
+          #       name: zilla-backend-secret
+          #       key: ZILLA_DB_USER
+          # - name: SMTH_SECRET
+          #   valueFrom:
+          #     secretKeyRef:
+          #       name: zilla-backend-secret
+          #       key: ZILLA_DB_HOST
+        # resources:
+        #   requests:
+        #     cpu: 100m
+        #     memory: 256Mi
+        #   limits:
+        #     cpu: 250m
+        #     memory: 512Mi
+        ports:
+          - containerPort: 3000
+        # volumeMounts:
+        #   - name: secrets
+        #     mountPath: "/mnt/secrets-store"
+        #     readOnly: true
+      # volumes:
+      #   - name: secrets
+      #     csi:
+      #       driver: secrets-store-gke.csi.k8s.io
+      #       readOnly: true
+      #       volumeAttributes:
+      #         secretProviderClass: "zilla-secret-provider"
