@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: zilla-frontned
+  name: zilla-frontend
 spec:
   replicas: 1
   selector:
@@ -16,7 +16,8 @@ spec:
     spec:
       containers:
       - name: zilla-frontend
-        image: hatch33/zilla-frontend:v0.1.3
+        image: europe-west2-docker.pkg.dev/zilla-438604/zilla/zilla-frontend:v0.1.3
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080
         env:

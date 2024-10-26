@@ -50,7 +50,7 @@ spec:
       # Main containers are the containers that will run the application
       containers:
       - name: zilla-backend
-        image: hatch33/zilla-backend:v0.1.2
+        image: europe-west2-docker.pkg.dev/zilla-438604/zilla/zilla-backend:v0.1.3
         imagePullPolicy: Always
         env:
           - name: REDIS_HOST
